@@ -1,18 +1,26 @@
 <template>
   <div class="bContainer">
     <button id="btn" @click="addCircle">+</button>
+    <br />
+    <input
+      id="inputName"
+      type="text"
+      v-model="cName"
+      placeholder="course name"
+      required
+    />
   </div>
   <div id="container">
-    <div>
-      <IconCircle
-        v-for="(item, index) in items"
-        :key="index"
-        class="draggable"
-        ref="draggable"
-        @mousedown="startDrag($event, index)"
-        :style="{ left: item.x + 'px', top: item.y + 'px' }"
-      />
-      <p></p>
+    <div
+      v-for="(item, index) in items"
+      :key="index"
+      class="draggable"
+      ref="draggable"
+      @mousedown="startDrag($event, index)"
+      :style="{ left: item.x + 'px', top: item.y + 'px' }"
+    >
+      <IconCircle />
+      <p id="nameDisplay">{{ item.cName }}</p>
     </div>
   </div>
 </template>
@@ -20,22 +28,24 @@
 <script setup>
 import { ref, onUnmounted } from "vue";
 import IconCircle from "./icons/IconCircle.vue";
-var items = ref([
-  { x: 100, y: 100, dragging: false, cName: "course1" },
-  { x: 200, y: 100, dragging: false, cName: "course2" },
-]);
+var items = ref([]);
 
 const offset = ref({ x: 0, y: 0, index: null });
 
 const addCircle = () => {
+  if (document.getElementById("inputName").value == "") {
+    alert("Please enter a course name");
+    return;
+  }
   const button = document.getElementById("btn").getBoundingClientRect();
-  console.log(button);
+
   items.value.push({
-    x: button.x + 50,
-    y: button.y - 10,
+    x: button.x + button.width,
+    y: button.y - button.height / 3,
     dragging: false,
-    cName: "course3",
+    cName: document.getElementById("inputName").value,
   });
+  document.getElementById("inputName").value == "";
 };
 
 const startDrag = (event, index) => {
@@ -81,11 +91,13 @@ body {
   overflow: hidden;
 }
 
-button {
+#btn {
   background-color: rgb(94, 80, 80);
   border: none;
   color: white;
   padding: 10px;
+  margin-left: 50px;
+  margin-bottom: 20px;
   display: inline-block;
   font-size: 40px;
   border-radius: 1rem;
@@ -93,6 +105,7 @@ button {
 }
 
 .bContainer {
+  display: block;
   position: fixed;
   top: 0;
   left: 0;
@@ -115,5 +128,20 @@ button {
   text-align: center;
   user-select: none;
   font-weight: bold;
+}
+
+#inputName {
+  height: 35px;
+  width: 180px;
+  font-size: 20px;
+  border: none;
+  border-bottom: 2px solid red;
+  border-radius: 4px;
+  background-color: gray;
+}
+
+#nameDisplay {
+  font-size: 17px;
+  color: white;
 }
 </style>
