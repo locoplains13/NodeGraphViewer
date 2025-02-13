@@ -1,9 +1,17 @@
 <template>
   <div id="container">
+    <div id="instructions">
+      <p>Click button on the left to add node</p>
+      <p>
+        You can drag it around, or use ctrl+click to select it, and then
+        ctrl+click again on another node to connect it
+      </p>
+    </div>
+    <div id="popup"><p id="popup-text"></p></div>
     <div
       v-for="(line, index) in lines"
       :key="index"
-      :style="{ stroke: 'white', 'stroke-width': 5 }"
+      :style="{ stroke: 'white', 'stroke-width': 2 }"
     >
       <svg
         id="line"
@@ -26,7 +34,7 @@
         id="inputName"
         type="text"
         v-model="cName"
-        placeholder="course name"
+        placeholder="node name"
         required
       />
     </div>
@@ -67,7 +75,6 @@ const addCircle = () => {
     dragging: false,
     cName: document.getElementById("inputName").value,
   });
-  document.getElementById("inputName").value = "";
 };
 
 const startDrag = (event, index) => {
@@ -110,9 +117,18 @@ const secondSelectedCircle = ref(null);
 const handleKeyDown = (index) => {
   if (firstSelectedCircle.value === null) {
     firstSelectedCircle.value = index;
+    lastSelectedCircle.value = firstSelectedCircle.value;
+    document.getElementById(
+      "popup"
+    ).innerHTML = `Node <em>${items.value[index].cName}</em> selected`;
+    document.getElementById("popup").style.visibility = "visible";
     return;
-  } else if (secondSelectedCircle.value === null) {
+  } else if (
+    secondSelectedCircle.value === null &&
+    firstSelectedCircle.value !== index
+  ) {
     secondSelectedCircle.value = index;
+    lastSelectedCircle.value = secondSelectedCircle.value;
     // Set the current circle as the last selected circle
   }
   if (
@@ -125,6 +141,7 @@ const handleKeyDown = (index) => {
     });
     firstSelectedCircle.value = null;
     secondSelectedCircle.value = null;
+    document.getElementById("popup").style.visibility = "hidden";
   }
 };
 </script>
@@ -197,5 +214,28 @@ body {
   top: 0;
   left: 0;
   z-index: -1;
+}
+
+#instructions {
+  position: fixed;
+  top: 0;
+  left: 0;
+  align-items: center;
+  background-color: #ffffff00;
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
+}
+#popup {
+  visibility: hidden;
+  font-size: 30px;
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  align-items: center;
+  background-color: black;
+  border-radius: 10px;
+  opacity: 0.5;
 }
 </style>
