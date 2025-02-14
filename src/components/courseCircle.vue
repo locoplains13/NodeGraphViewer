@@ -1,13 +1,19 @@
 <template>
   <div id="container">
+    <!-- Instructions for the user -->
     <div id="instructions">
       <p>Click button on the left to add node</p>
       <p>
-        You can drag it around, or use ctrl+click to select it, and then
-        ctrl+click again on another node to connect it
+        -You can drag it around
+        <br />
+        -Hold ctrl and click on two nodes to connect them
+        <br />
+        -Hold shift and click on a node to delete it
       </p>
     </div>
+    <!-- Popup for displaying messages -->
     <div id="popup"><p id="popup-text"></p></div>
+    <!-- Loop through lines and draw them -->
     <div
       v-for="(line, index) in lines"
       :key="index"
@@ -17,7 +23,7 @@
         id="line"
         height="2000"
         width="3000"
-        xmlns="httpee://www.w3.org/2000/svg"
+        xmlns="http://www.w3.org/2000/svg"
       >
         <line
           :x1="items[line.index1].x + 50"
@@ -27,9 +33,11 @@
         />
       </svg>
     </div>
+    <!-- Button to add a new circle -->
     <div class="bContainer">
       <button id="btn" @click="addCircle()">+</button>
       <br />
+      <!-- Input for the name of the new circle -->
       <input
         id="inputName"
         type="text"
@@ -38,14 +46,15 @@
         required
       />
     </div>
+    <!-- Loop through items and display them as draggable circles -->
     <div
       v-for="(item, index) in items"
-      :key="index"
+      :key="item.id"
       class="draggable"
-      id="0"
       ref="draggable"
+      v-on:click.ctrl="handleConnectLine(index)"
+      v-on:click.shift="handleDelete(index)"
       @mousedown="startDrag($event, index)"
-      v-on:click.ctrl="handleKeyDown(index)"
       :style="{ left: item.x + 'px', top: item.y + 'px' }"
     >
       <IconCircle />
@@ -58,18 +67,24 @@
 import { ref, onUnmounted, watch } from "vue";
 import IconCircle from "./icons/IconCircle.vue";
 
+// Reactive references for items, lines, and dragging offset
 const items = ref([]);
 const lines = ref([]);
 const offset = ref({ x: 0, y: 0, index: null });
-const lastSelectedCircle = ref(null);
+const firstSelectedCircle = ref(null);
+const secondSelectedCircle = ref(null);
 
+// Add an initial item
 items.value.push({ x: 900, y: 400, dragging: false, cName: "Course 1", id: 0 });
 
-var countId = 0;
+var countId = 1;
 
+// Function to add a new circle
 const addCircle = () => {
   if (document.getElementById("inputName").value === "") {
-    alert("Please enter a course name");
+    document.getElementById("popup-text").innerHTML =
+      "Please enter a course name";
+    document.getElementById("popup").style.visibility = "visible";
     return;
   }
   const button = document.getElementById("btn").getBoundingClientRect();
@@ -82,8 +97,10 @@ const addCircle = () => {
     id: countId,
   });
   countId++;
+  document.getElementById("inputName").value = "";
 };
 
+// Function to start dragging a circle
 const startDrag = (event, index) => {
   offset.value.x = event.clientX - items.value[index].x;
   offset.value.y = event.clientY - items.value[index].y;
@@ -94,6 +111,7 @@ const startDrag = (event, index) => {
   document.addEventListener("mouseup", stopDrag);
 };
 
+// Function to handle dragging a circle
 const onDrag = (event) => {
   if (offset.value.index !== null) {
     const index = offset.value.index;
@@ -102,6 +120,7 @@ const onDrag = (event) => {
   }
 };
 
+// Function to stop dragging a circle
 const stopDrag = () => {
   if (offset.value.index !== null) {
     items.value[offset.value.index].dragging = false;
@@ -118,15 +137,12 @@ onUnmounted(() => {
   document.removeEventListener("mouseup", stopDrag);
 });
 
-const firstSelectedCircle = ref(null);
-const secondSelectedCircle = ref(null);
-
-const handleKeyDown = (index) => {
+// Function to handle connecting two circles with a line
+const handleConnectLine = (index) => {
   if (firstSelectedCircle.value === null) {
     firstSelectedCircle.value = index;
-    lastSelectedCircle.value = firstSelectedCircle.value;
     document.getElementById(
-      "popup"
+      "popup-text"
     ).innerHTML = `Node <em>${items.value[index].cName}</em> selected`;
     document.getElementById("popup").style.visibility = "visible";
     return;
@@ -135,8 +151,6 @@ const handleKeyDown = (index) => {
     firstSelectedCircle.value !== index
   ) {
     secondSelectedCircle.value = index;
-    lastSelectedCircle.value = secondSelectedCircle.value;
-    // Set the current circle as the last selected circle
   }
   if (
     secondSelectedCircle.value !== null &&
@@ -150,6 +164,19 @@ const handleKeyDown = (index) => {
     secondSelectedCircle.value = null;
     document.getElementById("popup").style.visibility = "hidden";
   }
+};
+
+// Function to handle deleting a circle
+const handleDelete = (index) => {
+  items.value.splice(index, 1);
+  lines.value = lines.value.filter(
+    (line) => line.index1 !== index && line.index2 !== index
+  );
+  // Update line indices
+  lines.value.forEach((line) => {
+    if (line.index1 > index) line.index1--;
+    if (line.index2 > index) line.index2--;
+  });
 };
 </script>
 
@@ -249,5 +276,6 @@ body {
   background-color: black;
   border-radius: 10px;
   opacity: 0.5;
+  transition-duration: 1s;
 }
 </style>
