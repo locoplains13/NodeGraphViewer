@@ -28,7 +28,7 @@
       </svg>
     </div>
     <div class="bContainer">
-      <button id="btn" @click="addCircle">+</button>
+      <button id="btn" @click="addCircle()">+</button>
       <br />
       <input
         id="inputName"
@@ -42,10 +42,10 @@
       v-for="(item, index) in items"
       :key="index"
       class="draggable"
+      id="0"
       ref="draggable"
       @mousedown="startDrag($event, index)"
       v-on:click.ctrl="handleKeyDown(index)"
-      tabindex="0"
       :style="{ left: item.x + 'px', top: item.y + 'px' }"
     >
       <IconCircle />
@@ -63,18 +63,25 @@ const lines = ref([]);
 const offset = ref({ x: 0, y: 0, index: null });
 const lastSelectedCircle = ref(null);
 
+items.value.push({ x: 900, y: 400, dragging: false, cName: "Course 1", id: 0 });
+
+var countId = 0;
+
 const addCircle = () => {
   if (document.getElementById("inputName").value === "") {
     alert("Please enter a course name");
     return;
   }
   const button = document.getElementById("btn").getBoundingClientRect();
+
   items.value.push({
     x: button.x + button.width,
     y: button.y - button.height / 3,
     dragging: false,
     cName: document.getElementById("inputName").value,
+    id: countId,
   });
+  countId++;
 };
 
 const startDrag = (event, index) => {
@@ -155,9 +162,9 @@ body {
 }
 
 #btn {
-  background-color: rgb(94, 80, 80);
-  border: none;
-  color: white;
+  background-color: rgba(94, 80, 80, 0);
+  border: 2px solid #988a89;
+  color: #988a89;
   padding: 10px;
   margin-left: 50px;
   margin-bottom: 20px;
@@ -165,8 +172,13 @@ body {
   font-size: 40px;
   border-radius: 1rem;
   cursor: pointer;
+  transition-duration: 0.4s;
 }
 
+#btn:hover {
+  background-color: #988a89;
+  color: white;
+}
 .bContainer {
   display: block;
   position: fixed;
